@@ -1,0 +1,14 @@
+torch
+torchvision
+numpy
+networkX
+tensorboardX
+tqdm
+jsonlines
+timm
+h5py
+easydict
+lmdb
+Pillow
+progressbar33
+transformers
