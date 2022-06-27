@@ -4,12 +4,12 @@
 
 * [Paper](https://arxiv.org/abs/2203.15685)
 
-In Vision-and-Language Navigation (VLN), an agent needs to navigate through the environment based on natural language instructions. 
-Due to limited available data for agent training and finite diversity in navigation environments, it is challenging for the agent to generalize to new, unseen environments. 
-To address this problem, we propose EnvEdit, a data augmentation method that creates new environments by editing existing environments, which are used to train a more generalizable agent. 
-Our augmented environments can differ from the seen environments in three diverse aspects: style, object appearance, and object classes. 
-Training on these edit-augmented environments prevents the agent from overfitting to existing environments and helps generalize better to new, unseen environments. 
-Empirically, on both the Room-to-Room and the multi-lingual Room-Across-Room datasets, we show that our proposed EnvEdit method gets significant improvements in all metrics on both pre-trained and non-pre-trained VLN agents, and achieves the new state-of-the-art on the test leaderboard. 
+In Vision-and-Language Navigation (VLN), an agent needs to navigate through the environment based on natural language instructions.
+Due to limited available data for agent training and finite diversity in navigation environments, it is challenging for the agent to generalize to new, unseen environments.
+To address this problem, we propose EnvEdit, a data augmentation method that creates new environments by editing existing environments, which are used to train a more generalizable agent.
+Our augmented environments can differ from the seen environments in three diverse aspects: style, object appearance, and object classes.
+Training on these edit-augmented environments prevents the agent from overfitting to existing environments and helps generalize better to new, unseen environments.
+Empirically, on both the Room-to-Room and the multi-lingual Room-Across-Room datasets, we show that our proposed EnvEdit method gets significant improvements in all metrics on both pre-trained and non-pre-trained VLN agents, and achieves the new state-of-the-art on the test leaderboard.
 We further ensemble the VLN agents augmented on different edited environments and show that these edit methods are complementary.
 
 <img src="./figures/intro_new.png" alt="intro image" width="500"/>
@@ -36,25 +36,25 @@ The name of the pre-computed features for the original environment: CLIP-ViT-B-`
 
 The name of pre-computed features for the edited environments: CLIP-ViT-B-`patch_size`-views-`edit_env_name`.tsv
 
-* `patch_size`: 
-    * `16`: ViT-B-16. 
-    
+* `patch_size`:
+    * `16`: ViT-B-16.
+
     * `32`: ViT-B-32.
 
-* `edit_env_name`: 
+* `edit_env_name`:
 
     * `st-samefilter`: style transfer with fixed style embedding for 36 discretized views in a panorama.  
 
     * `st-sameenv`: style transfer with fixed style embedding for one environment.
-    
+
     * `st`: style transfer with random style embedding for every single view.
-    
+
     * `spade-original`: use the same style as the original environment during image synthesis.
-    
+
     * `spade-random`: use random style during image synthesis.
-    
+
     * `spade-mask-original`: use the same style as the original environment, and randomly mask out one class in the semantic segmentation during image synthesis.
-    
+
     * `spade-mask-random`: use random style, and randomly mask out one class in the semantic segmentation during image synthesis.
 
 For using [HAMT](https://github.com/cshizhe/VLN-HAMT) as the base agent, pre-extracted visual features can be downloaded:
@@ -63,9 +63,9 @@ For using [HAMT](https://github.com/cshizhe/VLN-HAMT) as the base agent, pre-ext
 wget https://nlp.cs.unc.edu/data/envedit/features_HAMT.zip
 ```
 
-The main differences between features for HAMT agent and features for EnvDrop agent lie in 
+The main differences between features for HAMT agent and features for EnvDrop agent lie in
 
-(1) On Room-to-Room dataset, the features for HAMT are extracted with the visual backbone in pre-trained model (not fine-tuned on VLN task) released in HAMT. The visual backbone does not contain the last representation layer in CLIP. The features for EnvDrop agent are extracted with CLIP pretrained visual backbone with the last representation layer (mapped to 512 dimension). 
+(1) On Room-to-Room dataset, the features for HAMT are extracted with the visual backbone in pre-trained model (not fine-tuned on VLN task) released in HAMT. The visual backbone does not contain the last representation layer in CLIP. The features for EnvDrop agent are extracted with CLIP pretrained visual backbone with the last representation layer (mapped to 512 dimension).
 
 (2) On Room-Across-Room dataset, the features for HAMT is exactly the same as the CLIP-ViT-B-32-`edit_env_name`.tsv features we used for EnvDrop agent.
 
@@ -143,10 +143,10 @@ To generate edited environments with trained model:
 bash scripts/test.bash
 ```
 
-* `style_method`: 
+* `style_method`:
 
-    * `original`: using the same style as the original enviornments. 
-    
+    * `original`: using the same style as the original enviornments.
+
     * `random`: using random style for synthesizing the environments.
 
 * `output_dir`: path to output edited environments.
@@ -155,6 +155,8 @@ bash scripts/test.bash
 ## Stage 2: VLN Navigation Agent Training
 
 Train the agent on both the original environment and the edited enviornment:
+
+Base Agent EnvDrop:
 
 ```bash
 bash run/agent.bash 0
@@ -166,7 +168,22 @@ bash run/agent.bash 0
 
 * `dataset`: `R2R` or `RxR` depending on the training dataset.
 
-## Stage 3: Back Translation with Style-aware Speaker 
+Base Agent HAMT:
+
+```bash
+cd hamt_src
+bash scripts/run_r2r.bash
+bash scripts/run_rxr.bash
+```
+
+* `features_aug`:
+
+    * on R2R, picked from `vit-16-st-samefilter-768-e2e`, `vit-16-spade-original-768-e2e`, `vit-16-spade-mask-original-768-e2e`
+
+    * on RxR, picked from `vit-32-st-samefilter`, `vit-32-spade-original`, `vit-32-spade-mask-original`
+
+
+## Stage 3: Back Translation with Style-aware Speaker
 
 Train the style-aware speaker with:
 
@@ -176,7 +193,7 @@ bash run/speaker.bash 0
 
 * `feature_extract`: path to 16/32 features for the original environment.
 
-* `aug_env`: path to 16/32 features for the edited environment. 
+* `aug_env`: path to 16/32 features for the edited environment.
 
 * `style_embedding`: path to style embedding extracted with style encoder learned in Stage 1 with image synthesis (SPADE) model. (We'll provide a download link for the style embedding pre-extracted by us ASAP.)
 
@@ -211,4 +228,3 @@ If you find this work useful, please consider citing:
 ## Acknowledgement:
 
 We thank the developers of [EnvDrop](https://github.com/clip-vil/CLIP-ViL/tree/master/CLIP-ViL-VLN), [HAMT](https://github.com/cshizhe/VLN-HAMT), [Style Augmentation](https://github.com/philipjackson/style-augmentation), [SPADE](https://github.com/NVlabs/SPADE) for their public code release.
-
